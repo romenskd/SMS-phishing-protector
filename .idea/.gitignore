@@ -1,0 +1,10 @@
+# IntelliJ
+.idea/
+*.iml
+workspace.xml
+shelf/
+# HTTP requests
+httpRequests/
+# Datasource
+dataSources/
+dataSources.local.xml
