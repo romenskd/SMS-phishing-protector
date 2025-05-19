@@ -57,6 +57,11 @@ SMS Shield is composed of four microservices:
 git clone https://github.com/romenskd/SMS-phishing-protector
 SMS-phishing-protector
 docker-compose up -d
+--- 
+docker run -d --name user-service -p 8081:8080 romenskd/user-service
+docker run -d --name sms-ingestion-service -p 8080:8080 romenskd/sms-ingestion-service
+docker run -d --name phishing-control-service -p 8082:8080 romenskd/phishing-control-service
+docker run -d --name notification-service -p 8083:8080 romenskd/notification-service
 ```
 
 ##  Future Plans
