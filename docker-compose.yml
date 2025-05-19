@@ -6,6 +6,7 @@ services:
     build:
       context: ./user_service
       dockerfile: Dockerfile
+    image: romenskd/user-service:latest
     ports:
       - "8081:8080"
     networks:
@@ -32,6 +33,7 @@ services:
     build:
       context: ./sms_ingestion_service
       dockerfile: Dockerfile
+    image: romenskd/sms-ingestion-service:latest
     ports:
       - "8080:8080"
     networks:
@@ -71,6 +73,7 @@ services:
     build:
       context: ./phishing_control_service
       dockerfile: Dockerfile
+    image: romenskd/phishing-control-service:latest
     ports:
       - "8082:8080"
     networks:
@@ -107,6 +110,7 @@ services:
     build:
       context: ./notification_service
       dockerfile: Dockerfile
+    image: romenskd/notification-service:latest
     ports:
       - "8083:8080"
     networks:
