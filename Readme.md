@@ -25,7 +25,8 @@ SMS Shield is composed of four microservices:
 | **Notification Service** | Sends alerts or logs about blocked phishing attempts                        |
 
 ---
-
+## System design 
+https://excalidraw.com/#json=uTRvv02DayBuiJ_ckNrU8,T_dHKk-2EdqndFwAXe3oYg
 ## 🔍 How It Works
 
 1. All incoming SMS messages are ingested in JSON format:
