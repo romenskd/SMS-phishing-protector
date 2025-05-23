@@ -1,0 +1,228 @@
+version: "3.9"
+
+services:
+  user-service:
+    container_name: user-service
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    image: romenskd/user-service:latest
+    ports:
+      - "8081:8080"
+    networks:
+      - app-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      sms_messages_db:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: user_service
+      SPRING_PROFILES_ACTIVE: default
+      spring.kafka.bootstrap-servers: kafka:9092
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health | grep '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sms-ingestion-service:
+    container_name: sms-ingestion-service
+    build:
+      context: ./sms_ingestion_service
+      dockerfile: Dockerfile
+    image: romenskd/sms-ingestion-service:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: sms_ingestion_service
+      SPRING_PROFILES_ACTIVE: default
+      spring.kafka.bootstrap-servers: kafka:9092
+      spring.kafka.producer.acks: all
+      spring.kafka.producer.retries: 3
+      spring.kafka.producer.linger-ms: 1
+      spring.kafka.producer.batch-size: 16384
+      spring.kafka.producer.buffer-memory: 33554432
+      spring.kafka.producer.key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      spring.kafka.producer.value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      spring.kafka.topics.start-stop: sms-start-stop-events
+      spring.kafka.topics.url-verification: sms-url-verification-requests
+      spring.kafka.topics.dead-letter: sms-dead-letter-queue
+      spring.kafka.topic-config.start-stop.partitions: 3
+      spring.kafka.topic-config.start-stop.replication-factor: 2
+      spring.kafka.topic-config.url-verification.partitions: 5
+      spring.kafka.topic-config.url-verification.replication-factor: 2
+      spring.kafka.topic-config.url-verification.retention-ms: 3600000
+      management.endpoints.web.exposure.include: prometheus
+      management.prometheus.metrics.export.enabled: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health | grep '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  phishing-control-service:
+    container_name: phishing-control-service
+    build:
+      context: ./phishing_control_service
+      dockerfile: Dockerfile
+    image: romenskd/phishing-control-service:latest
+    ports:
+      - "8082:8080"
+    networks:
+      - app-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      processed_urls_db:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: phishing_control_service
+      SPRING_PROFILES_ACTIVE: default
+      spring.kafka.bootstrap-servers: kafka:9092
+      spring.kafka.consumer.group-id: phishing-control-group
+      spring.kafka.topics.url-verification: sms-url-verification-requests
+      spring.kafka.topics.verified-urls: verified-urls-events
+      spring.datasource.url: jdbc:postgresql://processed_urls_db:5432/tracked_urls
+      spring.datasource.username: user
+      spring.datasource.password: password
+      spring.redis.host: redis
+      spring.redis.port: 6379
+      management.endpoints.web.exposure.include: health,info,prometheus
+      management.health.redis.enabled: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health | grep '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    image: romenskd/notification-service:latest
+    ports:
+      - "8083:8080"
+    networks:
+      - app-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: notification_service
+      SPRING_PROFILES_ACTIVE: default
+      spring.kafka.bootstrap-servers: kafka:9092
+      spring.kafka.consumer.group-id: notification-group
+      spring.kafka.topics.notifications: notifications-topic
+      spring.redis.host: redis
+      spring.redis.port: 6379
+      management.endpoints.web.exposure.include: health,info,prometheus
+      management.health.redis.enabled: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health | grep '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    container_name: redis
+    image: redis:8.0.1
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.9.1
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - app-network
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: RddaomUtS-KMBlcfn5bw7g
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:9092 --list
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  processed_urls_db:
+    container_name: processed_urls_db
+    image: postgres:17.5
+    ports:
+      - "5432:5432"
+    volumes:
+      - processed_urls_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tracked_urls
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "tracked_urls"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  sms_messages_db:
+    container_name: sms_messages_db
+    image: postgres:17.5
+    ports:
+      - "5433:5432"
+    volumes:
+      - sms_messages_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sms_messages
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "sms_messages"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+volumes:
+  kafka_data:
+  processed_urls_data:
+  sms_messages_data:
+
+networks:
+  app-network:
+    driver: bridge
