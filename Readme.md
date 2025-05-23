@@ -25,7 +25,8 @@ SMS Shield is composed of four microservices:
 | **Notification Service** | Sends alerts or logs about blocked phishing attempts                        |
 
 ---
-
+## System design 
+https://excalidraw.com/#json=uTRvv02DayBuiJ_ckNrU8,T_dHKk-2EdqndFwAXe3oYg
 ## 🔍 How It Works
 
 1. All incoming SMS messages are ingested in JSON format:
@@ -57,10 +58,19 @@ SMS Shield is composed of four microservices:
 git clone https://github.com/romenskd/SMS-phishing-protector
 SMS-phishing-protector
 docker-compose up -d
+
+--- 
+docker run -d --name user-service -p 8081:8080 romenskd/user-service
+docker run -d --name sms-ingestion-service -p 8080:8080 romenskd/sms-ingestion-service
+docker run -d --name phishing-control-service -p 8082:8080 romenskd/phishing-control-service
+docker run -d --name notification-service -p 8083:8080 romenskd/notification-service
 ```
 
 ##  Future Plans
 
 -  **AI-based phishing detection** – Smarter, adaptive threat analysis using machine learning  
 -  **Web dashboard for logs and reports** – Real-time visibility into SMS filtering activity  
+-  **Integrations with Telegram, Slack, etc.** – Alerting and operational notifications via popular channels
+-  **AI-based phishing detection** – Smarter, adaptive threat analysis using machine learning
+-  **Web dashboard for logs and reports** – Real-time visibility into SMS filtering activity
 -  **Integrations with Telegram, Slack, etc.** – Alerting and operational notifications via popular channels

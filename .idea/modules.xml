@@ -3,8 +3,18 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/SMS-phishing-protector.iml" filepath="$PROJECT_DIR$/.idea/SMS-phishing-protector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/notification_service.iml" filepath="$PROJECT_DIR$/.idea/modules/notification_service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/phishing_control_service/phishing_control_service.iml" filepath="$PROJECT_DIR$/phishing_control_service/phishing_control_service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/phishing_control_service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/phishing_control_service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/phishing_control_service.test.iml" filepath="$PROJECT_DIR$/.idea/modules/phishing_control_service.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/processing_message_service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/processing_message_service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/processing_message_service.test.iml" filepath="$PROJECT_DIR$/.idea/modules/processing_message_service.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sms_ingestion_service/sms_ingestion_service.iml" filepath="$PROJECT_DIR$/sms_ingestion_service/sms_ingestion_service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sms_ingestion_service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sms_ingestion_service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sms_ingestion_service.test.iml" filepath="$PROJECT_DIR$/.idea/modules/sms_ingestion_service.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/user_service/user_service.iml" filepath="$PROJECT_DIR$/user_service/user_service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/user_service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/user_service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user_service.test.iml" filepath="$PROJECT_DIR$/.idea/modules/user_service.test.iml" />
     </modules>
   </component>
 </project>
